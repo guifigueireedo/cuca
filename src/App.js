@@ -8,9 +8,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartSimple, faQuestion } from '@fortawesome/free-solid-svg-icons';
 
 const THEME_GENERAL = "geral";
-const THEME_1_NAME = "verbos";
-const THEME_2_NAME = "adjetivos";
-const THEME_RESERVE_NAME = "reserva";
+const THEME_1_NAME = "verbs";
+const THEME_2_NAME = "adjectives";
+const THEME_RESERVE_NAME = "reserve";
 
 const MAX_ATTEMPTS = 6;
 const WORD_LENGTH = 5;
@@ -166,7 +166,7 @@ function App() {
           if (newTimer <= 0) {
             isGameOver = true;
             localStorage.removeItem(bombKey);
-            fetch('${process.env.REACT_APP_API_URL}/api/gamestate', {
+            fetch(`${process.env.REACT_APP_API_URL}/api/gamestate`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -191,7 +191,7 @@ function App() {
     const handleVisibility = () => {
       if (document.visibilityState === 'hidden' && selectedMode === 'bomba' && !gameState.gameOver && gameState.hasBombStarted) {
         localStorage.setItem(bombKey, gameState.timer);
-        fetch('${process.env.REACT_APP_API_URL}/api/gamestate', {
+        fetch(`${process.env.REACT_APP_API_URL}/api/gamestate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -303,7 +303,7 @@ function App() {
     updateState({ guesses: newGuesses, guess: Array(WORD_LENGTH).fill(""), activeTileIndex: 0, gameOver: isGameOver, gameWon: isGameWon, keyStatuses: newKeyStatuses });
 
     try {
-      await fetch('${process.env.REACT_APP_API_URL}/api/gamestate', {
+      await fetch(`${process.env.REACT_APP_API_URL}/api/gamestate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -176,7 +176,6 @@ app.post('/api/gamestate', async (req, res) => {
                 }
             }
 
-            // Atualiza as tentativas e o tempo total
             stats.totalAttempts += guesses.length;
             stats.totalTime += timer || 0;
             stats.lastPlayed = new Date();
