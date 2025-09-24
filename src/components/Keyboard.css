@@ -1,0 +1,59 @@
+.keyboard {
+  margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.key {
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 1rem;
+  border: 0;
+  padding: 0;
+  margin: 0 3px;
+  height: 50px;
+  width: 40px; 
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+  background-color: #818384;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+
+.key.special {
+  width: 60px;
+}
+
+.key.correct {
+  background-color: #538d4e;
+}
+
+.key.present {
+  background-color: #b59f3b;
+}
+
+.key.absent {
+  background-color: #3a3a3c;
+}
+
+@media (max-width: 400px) {
+  .key {
+    height: 45px;
+    font-size: 0.8rem;
+  }
+}

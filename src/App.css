@@ -1,38 +1,214 @@
+:root {
+  --color-background: #121213;
+  --color-tile-border: #3a3a3c;
+  --color-tile-absent: #3a3a3c;
+  --color-tile-present: #b59f3b;
+  --color-tile-correct: #538d4e;
+  --color-keyboard-bg: #818384;
+  --color-selector-bg: #3a3a3c;
+  --color-text-primary: white;
+}
+
+.theme-1 {
+  --color-background: #1a2b4a;
+  --color-tile-border: #2c4a6a;
+  --color-tile-absent: #2c4a6a;
+  --color-keyboard-bg: #6a7a9a;
+  --color-selector-bg: #2a3b5a;
+}
+
+.theme-2 {
+  --color-background: #1a3a2b;
+  --color-tile-border: #2c6a4a;
+  --color-tile-absent: #2c6a4a;
+  --color-keyboard-bg: #6a8a7a;
+  --color-selector-bg: #2a4a3b;
+}
+
 .App {
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+  background-color: var(--color-background);
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  box-sizing: border-box;
+  color: var(--color-text-primary);
+  transition: background-color 0.5s ease;
+}
+
+.top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--color-tile-border);
+  padding-bottom: 10px;
+}
+
+.top-bar-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.top-bar-section.left {
+  justify-content: flex-start;
+}
+
+.top-bar-section.center {
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+}
+
+.top-bar-section.right {
+  justify-content: flex-end;
+}
+
+.title-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title-container h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  text-align: center;
+}
+
+.tooltip-trigger {
+  font-weight: bold;
+  color: #888;
+  border: 1px solid #888;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.selector-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.selector-label {
+  font-size: 0.9rem;
+  color: #c7c7c7;
+}
+
+.theme-selector {
+  background-color: var(--color-selector-bg);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-tile-border);
+  border-radius: 4px;
+  padding: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.5s ease;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.game-board {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.board-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.tile {
+  width: 60px;
+  height: 60px;
+  border: 2px solid var(--color-tile-border);
+  color: var(--color-text-primary);
+  font-size: 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  transition: transform 0.1s ease, background-color 0.5s, border-color 0.5s;
+}
+
+.tile.active {
+  border-color: #888;
+  transform: scale(1.05);
+}
+
+.tile.correct {
+  background-color: var(--color-tile-correct);
+  border-color: var(--color-tile-correct);
+}
+
+.tile.present {
+  background-color: var(--color-tile-present);
+  border-color: var(--color-tile-present);
+}
+
+.tile.absent {
+  background-color: var(--color-tile-absent);
+  border-color: var(--color-tile-absent);
+}
+
+.game-over-message {
+  margin: 20px 0;
+}
+.game-over-message h2 {
+  margin: 0;
+}
+
+.countdown-timer {
+  font-size: 1.2rem;
+  color: #c7c7c7;
+}
+
+.start-button {
+  padding: 15px 30px;
+  font-size: 1.5rem;
+  font-weight: bold;
   color: white;
+  background-color: var(--color-tile-correct);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+@media (max-height: 750px), (max-width: 400px) {
+  .tile {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
   }
-  to {
-    transform: rotate(360deg);
+  .top-bar h1 {
+    font-size: 1.2rem;
   }
 }
