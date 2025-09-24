@@ -52,11 +52,19 @@ const createInitialGameState = () => {
 const reverseString = (str) => str ? str.split('').reverse().join('') : '';
 
 function App() {
+  const [modesMenuOpen, setModesMenuOpen] = useState(false);
+  const [themesMenuOpen, setThemesMenuOpen] = useState(false);
   const themeOptions = [
     { key: THEME_GENERAL, label: "Geral" },
     { key: THEME_1_NAME, label: THEME_1_NAME.charAt(0).toUpperCase() + THEME_1_NAME.slice(1) },
     { key: THEME_2_NAME, label: THEME_2_NAME.charAt(0).toUpperCase() + THEME_2_NAME.slice(1) }
   ];
+  const modeOptions = [
+    { key: "normal", label: "Normal" },
+    { key: "bomba", label: "Bomba Relógio" },
+    { key: "reverse", label: "Ao Contrário" }
+  ];
+
 
   const [selectedTheme, setSelectedTheme] = useState(THEME_GENERAL);
   const [selectedMode, setSelectedMode] = useState("normal");
@@ -119,11 +127,19 @@ function App() {
             hasBombStarted: bombStarted
           });
         } else {
-          setGameState(createInitialGameState());
+          const newGameState = createInitialGameState();
+          if (selectedMode !== 'bomba') {
+            newGameState.isTimerActive = true;
+          }
+          setGameState(newGameState);
         }
       } catch (error) {
         console.error("Falha ao buscar dados do jogo:", error);
-        setGameState(createInitialGameState());
+        const newGameState = createInitialGameState();
+        if (selectedMode !== 'bomba') {
+            newGameState.isTimerActive = true;
+        }
+        setGameState(newGameState);
       } finally {
         setIsLoading(false);
       }
@@ -339,15 +355,33 @@ function App() {
   return (
     <div className={`App ${themeClass}`}>
       <header className="App-header">
-        <div className="top-bar">
+      <div className="top-bar">
           <div className="top-bar-section left">
-            <div className="selector-container">
+            <div className="selector-container-desktop">
               <span className="selector-label">{isReversed ? reverseString("Modos:") : "Modos:"}</span>
               <select value={selectedMode} onChange={(e) => setSelectedMode(e.target.value)} className="theme-selector">
                 <option value="normal">Normal</option>
                 <option value="bomba">Bomba Relógio</option>
                 <option value="reverse">Ao Contrário</option>
               </select>
+            </div>
+            <div className="selector-container-mobile">
+              <div className="dropdown">
+                <button onClick={() => setModesMenuOpen(!modesMenuOpen)} className="dropdown-button">
+                  Modos
+                </button>
+                {modesMenuOpen && (
+                  <div className="dropdown-content">
+                    {modeOptions.map(option => (
+                      <a key={option.key} href="#" className={selectedMode === option.key ? 'selected' : ''} onClick={(e) => {
+                        e.preventDefault();
+                        setSelectedMode(option.key);
+                        setModesMenuOpen(false);
+                      }}>{option.label}</a>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <div className="top-bar-section center">
@@ -397,7 +431,7 @@ function App() {
             </div>
           </div>
           <div className="top-bar-section right">
-            <div className="selector-container">
+            <div className="selector-container-desktop">
               <span className="selector-label">{isReversed ? reverseString("Temas:") : "Temas:"}</span>
               <select value={selectedTheme} onChange={(e) => setSelectedTheme(e.target.value)} className="theme-selector">
                 <option value="geral">Geral</option>
@@ -405,8 +439,27 @@ function App() {
                 <option value="adjectives">Adjetivos</option>
               </select>
             </div>
+            <div className="selector-container-mobile">
+              <div className="dropdown right">
+                <button onClick={() => setThemesMenuOpen(!themesMenuOpen)} className="dropdown-button">
+                  Temas
+                </button>
+                {themesMenuOpen && (
+                  <div className="dropdown-content">
+                    {themeOptions.map(option => (
+                      <a key={option.key} href="#" className={selectedTheme === option.key ? 'selected' : ''} onClick={(e) => {
+                        e.preventDefault();
+                        setSelectedTheme(option.key);
+                        setThemesMenuOpen(false);
+                      }}>{option.label}</a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
+
 
         <div className="main-content">
           {selectedMode === 'bomba' && !gameState.hasBombStarted && !gameState.gameOver ? (
@@ -440,7 +493,7 @@ function App() {
           )}
         </div>
         
-        {(!gameState.gameOver && gameState.isTimerActive) && (
+        {(!gameState.gameOver && (selectedMode !== 'bomba' || gameState.hasBombStarted)) && (
           <Keyboard
             onKeyPress={handleKeyPress}
             onEnter={handleEnter}
