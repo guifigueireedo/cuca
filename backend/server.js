@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const { words: allWords } = require('./words');
 require('dotenv').config();
 
 const THEME_GENERAL = "geral";
@@ -90,6 +91,14 @@ const statsSchema = new mongoose.Schema({
 });
 const Stats = mongoose.model('Stats', statsSchema);
 
+app.get('/api/validate/:word', (req, res) => {
+  const { word } = req.params;
+  const normalizedWord = word.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const wordExists = Object.values(allWords).flat().includes(normalizedWord);
+
+  res.json({ isValid: wordExists });
+});
 
 app.get('/api/gamestate/:userId', async (req, res) => {
     try {

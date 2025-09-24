@@ -54,6 +54,7 @@ const reverseString = (str) => str ? str.split('').reverse().join('') : '';
 function App() {
   const [modesMenuOpen, setModesMenuOpen] = useState(false);
   const [themesMenuOpen, setThemesMenuOpen] = useState(false);
+  const [invalidWord, setInvalidWord] = useState(false);
   const themeOptions = [
     { key: THEME_GENERAL, label: "Geral" },
     { key: THEME_1_NAME, label: THEME_1_NAME.charAt(0).toUpperCase() + THEME_1_NAME.slice(1) },
@@ -246,19 +247,37 @@ function App() {
 
   const handleDelete = useCallback(() => {
     if (gameState.gameOver || !gameState.isTimerActive) return;
-    const newGuess = [...gameState.guess];
-    newGuess[gameState.activeTileIndex] = "";
-    let newIndex = gameState.activeTileIndex;
-    if (newIndex > 0) {
-      newIndex -= 1;
-    }
-    updateState({ guess: newGuess, activeTileIndex: newIndex });
-  }, [gameState]);
+    
+    setGameState(prev => {
+      if (prev.activeTileIndex > 0) {
+        const newGuess = [...prev.guess];
+        const newIndex = prev.activeTileIndex - 1;
+        newGuess[newIndex] = "";
+        return { ...prev, guess: newGuess, activeTileIndex: newIndex };
+      }
+      return prev;
+    });
+  }, [gameState.gameOver, gameState.isTimerActive]);
   
   const handleEnter = useCallback(async () => {
     if (gameState.gameOver || !gameState.isTimerActive) return;
     const { guess, currentWord, guesses, keyStatuses } = gameState;
     const guessString = guess.join('');
+
+    setInvalidWord(false);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/validate/${guessString}`);
+      const data = await response.json();
+      if (!data.isValid) {
+        setInvalidWord(true);
+        return;
+      }
+    }
+    catch (error) {
+    console.error("Erro ao validar a palavra:", error);
+    return;
+  }
 
     if (guessString.length !== WORD_LENGTH) return;
     
@@ -475,7 +494,7 @@ function App() {
                   </div>
                 ))}
                 {!gameState.gameOver && (
-                  <div className="board-row">
+                  <div className={`board-row ${invalidWord ? 'invalid' : ''}`}>
                     {gameState.guess.map((letter, i) => (
                       <div key={i} className={`tile ${i === gameState.activeTileIndex ? 'active' : ''}`} onClick={() => handleTileClick(i)}>{letter}</div>
                     ))}
