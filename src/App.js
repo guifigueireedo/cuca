@@ -8,8 +8,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartSimple, faQuestion } from '@fortawesome/free-solid-svg-icons';
 
 const THEME_GENERAL = "geral";
-const THEME_1_NAME = "verbs";
-const THEME_2_NAME = "adjectives";
+const THEME_1_NAME = "Verbos";
+const THEME_2_NAME = "Adjetivos";
 const THEME_RESERVE_NAME = "reserve";
 
 const MAX_ATTEMPTS = 6;
