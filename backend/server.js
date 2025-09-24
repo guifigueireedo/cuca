@@ -165,22 +165,22 @@ app.post('/api/gamestate', async (req, res) => {
                 stats = new Stats({ userId, mode, theme });
             }
             const todayStr = new Date().toISOString().split('T')[0];
-            const statsKey = `${userId}-${todayStr}-${theme}-${mode}`;
-            const gameStateToday = await GameState.findOne({ key: statsKey });
-            const alreadyCountedToday = stats.lastPlayed && stats.lastPlayed.toISOString().split('T')[0] === todayStr;
-            if (gameStateToday && gameStateToday.gameOver && !alreadyCountedToday) {
+            const lastPlayedStr = stats.lastPlayed ? stats.lastPlayed.toISOString().split('T')[0] : null;
+
+            if (lastPlayedStr !== todayStr) {
                 stats.totalGames += 1;
-                stats.lastPlayed = new Date();
-            }
-            if (gameStateToday && gameStateToday.gameOver && !alreadyCountedToday) {
                 if (gameWon === true) {
                     stats.wins += 1;
                 } else {
                     stats.losses += 1;
                 }
             }
+
+            // Atualiza as tentativas e o tempo total
             stats.totalAttempts += guesses.length;
             stats.totalTime += timer || 0;
+            stats.lastPlayed = new Date();
+            
             await stats.save();
         }
 
