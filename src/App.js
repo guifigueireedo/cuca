@@ -74,7 +74,7 @@ function App() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/stats/${userId}`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/stats/${userId}`);
         if (!response.ok) throw new Error('Erro ao buscar estatísticas');
         const data = await response.json();
         setUserStats(data.stats || []);
@@ -88,7 +88,7 @@ function App() {
   useEffect(() => {
     const fetchGameData = async () => {
       setIsLoading(true);
-      const endpoint = `http://localhost:5000/api/gamestate/${userId}?theme=${selectedTheme}&mode=${selectedMode}`;
+      const endpoint = `${process.env.REACT_APP_API_URL}/api/gamestate/${userId}?theme=${selectedTheme}&mode=${selectedMode}`;
 
       try {
         const response = await fetch(endpoint);
@@ -150,7 +150,7 @@ function App() {
           if (newTimer <= 0) {
             isGameOver = true;
             localStorage.removeItem(bombKey);
-            fetch('http://localhost:5000/api/gamestate', {
+            fetch('${process.env.REACT_APP_API_URL}/api/gamestate', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -175,7 +175,7 @@ function App() {
     const handleVisibility = () => {
       if (document.visibilityState === 'hidden' && selectedMode === 'bomba' && !gameState.gameOver && gameState.hasBombStarted) {
         localStorage.setItem(bombKey, gameState.timer);
-        fetch('http://localhost:5000/api/gamestate', {
+        fetch('${process.env.REACT_APP_API_URL}/api/gamestate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -287,7 +287,7 @@ function App() {
     updateState({ guesses: newGuesses, guess: Array(WORD_LENGTH).fill(""), activeTileIndex: 0, gameOver: isGameOver, gameWon: isGameWon, keyStatuses: newKeyStatuses });
 
     try {
-      await fetch('http://localhost:5000/api/gamestate', {
+      await fetch('${process.env.REACT_APP_API_URL}/api/gamestate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
