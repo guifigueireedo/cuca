@@ -247,104 +247,116 @@ function App() {
 
   const handleDelete = useCallback(() => {
     if (gameState.gameOver || !gameState.isTimerActive) return;
-    
+
     setGameState(prev => {
-      if (prev.activeTileIndex > 0) {
-        const newGuess = [...prev.guess];
-        const newIndex = prev.activeTileIndex - 1;
-        newGuess[newIndex] = ""; 
-        
-        return { ...prev, guess: newGuess, activeTileIndex: newIndex };
-      }
-      
-      return prev; 
+        const { activeTileIndex, guess } = prev;
+
+        if (activeTileIndex > 0) {
+            const newIndex = activeTileIndex - 1;
+            const newGuess = [...guess];
+            newGuess[newIndex] = '';
+            return { ...prev, guess: newGuess, activeTileIndex: newIndex };
+        }
+
+        return prev;
     });
   }, [gameState.gameOver, gameState.isTimerActive]);
   
-  const handleEnter = useCallback(async () => {
-    if (gameState.gameOver || !gameState.isTimerActive) return;
+   const handleEnter = useCallback(async () => {
+    // Pega o estado mais recente no momento da execução
+    let currentState;
+    setGameState(prev => {
+      currentState = prev;
+      return prev;
+    });
 
-    const { guess, currentWord, guesses, keyStatuses } = gameState;
+    // Aguarda um ciclo para garantir que currentState foi definido
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const { guess, gameOver, isTimerActive, currentWord, guesses, keyStatuses, timer, hasBombStarted } = currentState;
     const guessString = guess.join('');
 
-    if (guessString.length !== WORD_LENGTH) {
-        return;
+    if (gameOver || !isTimerActive || guessString.length !== WORD_LENGTH) {
+      return;
     }
 
     setInvalidWord(false);
 
     try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/validate/${guessString}`);
-        if (!response.ok) {
-            throw new Error(`A validação falhou com o status ${response.status}`);
-        }
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/validate/${guessString}`);
+      if (!response.ok) {
+        console.error('API de validação falhou, permitindo o envio.');
+      } else {
         const data = await response.json();
-
         if (!data.isValid) {
-            setInvalidWord(true);
-            setTimeout(() => setInvalidWord(false), 1000);
-            return;
+          setInvalidWord(true);
+          setTimeout(() => setInvalidWord(false), 1000);
         }
-
-        const targetWord = selectedMode === 'reverse' ? reverseString(currentWord) : currentWord;
-        const normalizedTargetWord = normalizeString(targetWord);
-        const normalizedGuessString = normalizeString(guessString);
-
-        const newFeedback = [];
-        const wordLetters = normalizedTargetWord.split('');
-        for (let i = 0; i < WORD_LENGTH; i++) {
-            if (normalizeString(guess[i]) === wordLetters[i]) {
-                newFeedback[i] = { letter: guess[i], status: 'correct' };
-                wordLetters[i] = null;
-            }
+      }
+      
+      const targetWord = selectedMode === 'reverse' ? reverseString(currentWord) : currentWord;
+      const normalizedTargetWord = normalizeString(targetWord);
+      const normalizedGuessString = normalizeString(guessString);
+      
+      const newFeedback = [];
+      const wordLetters = normalizedTargetWord.split('');
+      for (let i = 0; i < WORD_LENGTH; i++) {
+        if (normalizeString(guess[i]) === wordLetters[i]) {
+          newFeedback[i] = { letter: guess[i], status: 'correct' };
+          wordLetters[i] = null;
         }
-        for (let i = 0; i < WORD_LENGTH; i++) {
-            if (newFeedback[i]) continue;
-            const letterIndex = wordLetters.indexOf(normalizeString(guess[i]));
-            if (letterIndex !== -1) {
-                newFeedback[i] = { letter: guess[i], status: 'present' };
-                wordLetters[letterIndex] = null;
-            } else {
-                newFeedback[i] = { letter: guess[i], status: 'absent' };
-            }
+      }
+      for (let i = 0; i < WORD_LENGTH; i++) {
+        if (newFeedback[i]) continue;
+        const letterIndex = wordLetters.indexOf(normalizeString(guess[i]));
+        if (letterIndex !== -1) {
+          newFeedback[i] = { letter: guess[i], status: 'present' };
+          wordLetters[letterIndex] = null;
+        } else {
+          newFeedback[i] = { letter: guess[i], status: 'absent' };
         }
+      }
+      
+      const newKeyStatuses = { ...keyStatuses };
+      newFeedback.forEach(({ letter, status }) => {
+        const normalizedLetter = normalizeString(letter);
+        const currentStatus = newKeyStatuses[normalizedLetter];
+        if (currentStatus === 'correct' || (currentStatus === 'present' && status !== 'correct')) return;
+        newKeyStatuses[normalizedLetter] = status;
+      });
 
-        const newKeyStatuses = { ...keyStatuses };
-        newFeedback.forEach(({ letter, status }) => {
-            const normalizedLetter = normalizeString(letter);
-            const currentStatus = newKeyStatuses[normalizedLetter];
-            if (currentStatus === 'correct' || (currentStatus === 'present' && status !== 'correct')) return;
-            newKeyStatuses[normalizedLetter] = status;
-        });
+      const newGuesses = [...guesses, newFeedback];
+      const isGameWon = normalizedGuessString === normalizedTargetWord;
+      const isGameOver = isGameWon || newGuesses.length === MAX_ATTEMPTS || (selectedMode === 'bomba' && timer <= 0);
 
-        const newGuesses = [...guesses, newFeedback];
-        let isGameWon = false;
-        if (normalizedGuessString === normalizedTargetWord) {
-          isGameWon = true;
-        }
-        const isGameOver = isGameWon || newGuesses.length === MAX_ATTEMPTS || (selectedMode === 'bomba' && gameState.timer <= 0);
+      updateState({
+        guesses: newGuesses,
+        guess: Array(WORD_LENGTH).fill(""),
+        activeTileIndex: 0,
+        gameOver: isGameOver,
+        gameWon: isGameWon,
+        keyStatuses: newKeyStatuses
+      });
 
-        updateState({ guesses: newGuesses, guess: Array(WORD_LENGTH).fill(""), activeTileIndex: 0, gameOver: isGameOver, gameWon: isGameWon, keyStatuses: newKeyStatuses });
+      await fetch(`${process.env.REACT_APP_API_URL}/api/gamestate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          theme: selectedTheme,
+          mode: selectedMode,
+          guesses: newGuesses,
+          gameWon: isGameWon,
+          gameOver: isGameOver,
+          timer,
+          hasBombStarted
+        }),
+      });
 
-        await fetch(`${process.env.REACT_APP_API_URL}/api/gamestate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId,
-              theme: selectedTheme,
-              mode: selectedMode,
-              guesses: newGuesses,
-              gameWon: isGameWon,
-              gameOver: isGameOver,
-              timer: gameState.timer,
-              hasBombStarted: gameState.hasBombStarted
-            }),
-          });
     } catch (error) {
-        console.error("Falha ao submeter a tentativa:", error);
+      console.error("Falha ao submeter a tentativa:", error);
     }
-
-  }, [gameState, selectedMode, selectedTheme, userId]);
+  }, [selectedMode, selectedTheme, userId, updateState]);
   
   const handleTileClick = (index) => {
     if (!gameState.gameOver) {
