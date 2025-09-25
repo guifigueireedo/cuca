@@ -248,15 +248,17 @@ function App() {
 
     setGameState(prev => {
         const { activeTileIndex, guess } = prev;
+        const newGuess = [...guess];
 
-        if (activeTileIndex > 0) {
-            const newIndex = activeTileIndex - 1;
-            const newGuess = [...guess];
-            newGuess[newIndex] = '';
-            return { ...prev, guess: newGuess, activeTileIndex: newIndex };
+        if (activeTileIndex === 0) {
+            newGuess[0] = '';
+            return { ...prev, guess: newGuess, activeTileIndex: 0 };
         }
 
-        return prev;
+        const newIndex = activeTileIndex - 1;
+        newGuess[newIndex] = '';
+
+        return { ...prev, guess: newGuess, activeTileIndex: newIndex };
     });
   }, [gameState.gameOver, gameState.isTimerActive]);
   
