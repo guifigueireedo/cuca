@@ -263,14 +263,12 @@ function App() {
   }, [gameState.gameOver, gameState.isTimerActive]);
   
    const handleEnter = useCallback(async () => {
-    // Pega o estado mais recente no momento da execução
     let currentState;
     setGameState(prev => {
       currentState = prev;
       return prev;
     });
 
-    // Aguarda um ciclo para garantir que currentState foi definido
     await new Promise(resolve => setTimeout(resolve, 0));
 
     const { guess, gameOver, isTimerActive, currentWord, guesses, keyStatuses, timer, hasBombStarted } = currentState;
@@ -284,20 +282,18 @@ function App() {
 
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/validate/${guessString}`);
-      if (!response.ok) {
-        console.error('API de validação falhou, permitindo o envio.');
-      } else {
-        const data = await response.json();
-        if (!data.isValid) {
-          setInvalidWord(true);
-          setTimeout(() => setInvalidWord(false), 1000);
-        }
+      const data = await response.json();
+
+      if (!data.isValid) {
+        setInvalidWord(true);
+        setTimeout(() => setInvalidWord(false), 1000);
+        return; // Impede que o resto da função seja executado
       }
-      
+  
       const targetWord = selectedMode === 'reverse' ? reverseString(currentWord) : currentWord;
       const normalizedTargetWord = normalizeString(targetWord);
       const normalizedGuessString = normalizeString(guessString);
-      
+  
       const newFeedback = [];
       const wordLetters = normalizedTargetWord.split('');
       for (let i = 0; i < WORD_LENGTH; i++) {
@@ -316,7 +312,7 @@ function App() {
           newFeedback[i] = { letter: guess[i], status: 'absent' };
         }
       }
-      
+  
       const newKeyStatuses = { ...keyStatuses };
       newFeedback.forEach(({ letter, status }) => {
         const normalizedLetter = normalizeString(letter);

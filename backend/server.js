@@ -91,15 +91,6 @@ const statsSchema = new mongoose.Schema({
 });
 const Stats = mongoose.model('Stats', statsSchema);
 
-app.get('/api/validate/:word', (req, res) => {
-  const { word } = req.params;
-  const normalizedWord = word.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-  const wordExists = Object.values(allWords).flat().includes(normalizedWord);
-
-  res.json({ isValid: wordExists });
-});
-
 app.get('/api/gamestate/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -222,6 +213,20 @@ app.get('/api/stats/:userId', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Erro ao buscar estatísticas.' });
     }
+});
+
+app.get('/api/validate/:word', (req, res) => {
+  const { word } = req.params;
+  if (!word) {
+    return res.status(400).json({ isValid: false, message: 'Nenhuma palavra fornecida.' });
+  }
+
+  const normalizedWord = word.toLowerCase();
+
+  const allWords = [].concat(...Object.values(words));
+  const isValid = allWords.includes(normalizedWord);
+
+  res.json({ isValid });
 });
 
 app.listen(port, () => {
