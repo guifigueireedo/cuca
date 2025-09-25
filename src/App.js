@@ -8,8 +8,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartSimple, faQuestion } from '@fortawesome/free-solid-svg-icons';
 
 const THEME_GENERAL = "geral";
-const THEME_1_NAME = "Verbos";
-const THEME_2_NAME = "Adjetivos";
 const THEME_RESERVE_NAME = "reserve";
 
 const MAX_ATTEMPTS = 6;
@@ -56,9 +54,9 @@ function App() {
   const [themesMenuOpen, setThemesMenuOpen] = useState(false);
   const [invalidWord, setInvalidWord] = useState(false);
   const themeOptions = [
-    { key: THEME_GENERAL, label: "Geral" },
-    { key: THEME_1_NAME, label: THEME_1_NAME.charAt(0).toUpperCase() + THEME_1_NAME.slice(1) },
-    { key: THEME_2_NAME, label: THEME_2_NAME.charAt(0).toUpperCase() + THEME_2_NAME.slice(1) }
+    { key: "geral", label: "Geral" },
+    { key: "verbs", label: "Verbos" },
+    { key: "adjectives", label: "Adjetivos" }
   ];
   const modeOptions = [
     { key: "normal", label: "Normal" },
@@ -70,8 +68,8 @@ function App() {
   const [selectedTheme, setSelectedTheme] = useState(THEME_GENERAL);
   const [selectedMode, setSelectedMode] = useState("normal");
   let themeClass = "theme-geral";
-  if (selectedTheme === THEME_1_NAME) themeClass = "theme-1";
-  else if (selectedTheme === THEME_2_NAME) themeClass = "theme-2";
+  if (selectedTheme === "verbs") themeClass = "theme-1";
+  else if (selectedTheme === "adjectives") themeClass = "theme-2";
   const isReversed = selectedMode === 'reverse';
 
   const [gameState, setGameState] = useState(createInitialGameState());
