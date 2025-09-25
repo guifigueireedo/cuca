@@ -250,15 +250,19 @@ function App() {
         const { activeTileIndex, guess } = prev;
         const newGuess = [...guess];
 
-        if (activeTileIndex === 0) {
-            newGuess[0] = '';
-            return { ...prev, guess: newGuess, activeTileIndex: 0 };
+        if (activeTileIndex > 0 && !guess[activeTileIndex]) {
+            const newIndex = activeTileIndex - 1;
+            newGuess[newIndex] = '';
+            return { ...prev, guess: newGuess, activeTileIndex: newIndex };
         }
 
-        const newIndex = activeTileIndex - 1;
-        newGuess[newIndex] = '';
+        newGuess[activeTileIndex] = '';
 
-        return { ...prev, guess: newGuess, activeTileIndex: newIndex };
+        if (activeTileIndex > 0) {
+            return { ...prev, guess: newGuess, activeTileIndex: activeTileIndex - 1 };
+        }
+        
+        return { ...prev, guess: newGuess };
     });
   }, [gameState.gameOver, gameState.isTimerActive]);
   
